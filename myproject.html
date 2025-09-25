@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Serverless Image Detection</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+    body {
+        font-family: 'Roboto', sans-serif;
+        background: linear-gradient(135deg, #f0eafc, #d9f0f7);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        min-height: 100vh;
+        padding: 50px 20px;
+        margin: 0;
+    }
+    h1 {
+        color: #5b2c6f;
+        margin-bottom: 40px;
+        text-align: center;
+    }
+    .card {
+        background: white;
+        padding: 40px 35px;
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(91, 44, 111, 0.2);
+        width: 100%;
+        max-width: 500px;
+        text-align: center;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(91, 44, 111, 0.3);
+    }
+    input[type="file"] {
+        margin: 20px 0;
+        padding: 10px;
+        border-radius: 12px;
+        border: 1px solid #ccc;
+        cursor: pointer;
+        width: 100%;
+        transition: 0.2s;
+    }
+    input[type="file"]:focus {
+        outline: none;
+        border-color: #8e44ad;
+        box-shadow: 0 0 5px rgba(142, 68, 173, 0.5);
+    }
+    button {
+        padding: 14px 30px;
+        background-color: #8e44ad;
+        color: white;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 16px;
+        transition: 0.3s;
+    }
+    button:hover {
+        background-color: #732d91;
+    }
+    #status {
+        margin-top: 20px;
+        font-weight: 500;
+        color: #4a235a;
+        min-height: 24px;
+    }
+    #labels {
+        margin-top: 20px;
+        background: #f3e6ff;
+        padding: 15px 20px;
+        border-radius: 15px;
+        color: #4a235a;
+        text-align: left;
+        word-break: break-word;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    #labels strong {
+        display: block;
+        margin-bottom: 10px;
+        font-size: 16px;
+    }
+    #preview {
+        margin-top: 20px;
+        max-width: 100%;
+        max-height: 250px;
+        border-radius: 15px;
+        object-fit: contain;
+        box-shadow: 0 5px 15px rgba(91, 44, 111, 0.1);
+    }
+</style>
+</head>
+<body>
+
+<h1>Serverless Image Detection</h1>
+<div class="card">
+    <input type="file" id="fileInput" accept=".jpg,.jpeg">
+    <button onclick="uploadAndDetect()">Upload & Detect</button>
+    <p id="status"></p>
+    <img id="preview" src="" alt="Image Preview" style="display:none;">
+    <div id="labels"></div>
+</div>
+
+<script>
+    const PRESIGNED_URL_API = "https://4pk0mofe0i.execute-api.ap-south-1.amazonaws.com/prod/generate-upload-url";
+    const DETECT_LABELS_API = "https://ahh8z69js9.execute-api.ap-south-1.amazonaws.com/prod/detect-labels";
+    const BUCKET_NAME = "image-upload-bucket-akshita";
+
+    async function uploadAndDetect() {
+        const fileInput = document.getElementById("fileInput");
+        const status = document.getElementById("status");
+        const labelsDiv = document.getElementById("labels");
+        const preview = document.getElementById("preview");
+
+        labelsDiv.innerHTML = "";
+        status.innerText = "";
+        preview.style.display = "none";
+
+        if (!fileInput.files.length) {
+            alert("Please select a JPG image!");
+            return;
+        }
+
+        const file = fileInput.files[0];
+
+        if (!file.name.toLowerCase().endsWith(".jpg") && !file.name.toLowerCase().endsWith(".jpeg")) {
+            alert("Only JPG/JPEG images allowed!");
+            return;
+        }
+
+        // Show preview
+        const reader = new FileReader();
+        reader.onload = e => {
+            preview.src = e.target.result;
+            preview.style.display = "block";
+        };
+        reader.readAsDataURL(file);
+
+        try {
+            status.innerText = "Requesting upload URL...";
+
+            // Get presigned URL
+            const presignedRes = await fetch(PRESIGNED_URL_API, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ fileName: file.name })
+            });
+            const presignedData = await presignedRes.json();
+            if(!presignedData.uploadUrl) throw new Error("Failed to get upload URL");
+
+            const uploadUrl = presignedData.uploadUrl;
+            status.innerText = "Uploading image...";
+
+            // Upload image
+            const uploadRes = await fetch(uploadUrl, { method: "PUT", body: file });
+            if (!uploadRes.ok) throw new Error("Upload failed");
+
+            status.innerText = "Upload successful! Detecting labels...";
+
+            //  Detect labels
+            const detectRes = await fetch(DETECT_LABELS_API, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ bucket: BUCKET_NAME, key: file.name })
+            });
+
+            if (!detectRes.ok) throw new Error("Label detection failed");
+
+            const detectData = await detectRes.json();
+
+            if (detectData.labels && detectData.labels.length > 0) {
+                labelsDiv.innerHTML = `<strong>Detected Labels:</strong> ${detectData.labels.join(", ")}`;
+            } else {
+                labelsDiv.innerHTML = "No labels detected.";
+            }
+
+            status.innerText = "Detection complete!";
+
+        } catch (err) {
+            console.error(err);
+            status.innerText = "Error: " + err.message;
+        }
+    }
+</script>
+
+</body>
+</html>
+
