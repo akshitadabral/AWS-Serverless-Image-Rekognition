@@ -66,4 +66,39 @@ This project is an **event-driven serverless image recognition system** built en
 
 ---
 
+Deployment Flow
 
+Automated Scripts 
+1. create_urlrole.py – Creates IAM role for Lambda functions with required permissions.
+2. create_bucket_with_cors.py – Creates S3 bucket and applies CORS configuration.
+3. create_dynamotable.py – Creates DynamoDB table to store image labels and metadata.
+4. create_sns.py – Creates SNS topic and subscription for email notifications.
+5. create_function1.py – Deploys GenerateUploadURLLambda function.
+6. create_function2.py – Deploys ProcessImageUploadLambda function.
+7. create_s3trigger.py – Connects S3 bucket “ObjectCreated” event to trigger ProcessImageUploadLambda.
+
+Manual Steps on AWS Console
+
+1. API Gateway: /generate-upload-url
+Create resource → Add POST method → Integrate with GenerateUploadURLLambda.
+2. Lambda Function: DetectLabelsLambda
+Manually create and paste detectlabels.py code.
+3. API Gateway: /detect-labels
+Create resource → Add POST method → Integrate with DetectLabelsLambda → Enable CORS.
+
+Frontend Setup
+
+1. Create or edit the frontend (static website).
+2. Configure API endpoint URLs (/generate-upload-url and /detect-labels) in the frontend code.
+3. Ensure S3 hosting bucket is created for the static website.
+
+Deployment
+
+1. create_deploy.py – Run this script to upload the frontend files to the S3 hosting bucket.
+2. Open the S3 static website URL to test the application.
+
+Notes
+
+1.Pre-signed URLs ensure secure uploads without exposing S3 bucket credentials.
+2.Serverless architecture allows automatic scaling with upload traffic.
+3.CloudWatch logs provide monitoring and debugging.
