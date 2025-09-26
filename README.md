@@ -104,24 +104,3 @@ Create resource → Add POST method → Integrate with DetectLabelsLambda → En
 2.Serverless architecture allows automatic scaling with upload traffic.
 
 3.CloudWatch logs provide monitoring and debugging.
-
----
-
-## Repository Structure
-
-
-AWS-Serverless-Image-Rekognition/
-├── create_urlrole.py
-
-├── create_bucket_with_cors.py
-
-├── create_dynamotable.py
-├── create_sns.py
-├── create_function1.py
-├── create_function2.py
-├── create_s3trigger.py
-├── create_deploy.py
-├── detectlabels.py
-├── myproject.html
-├── Documentation.pdf
-└── README.md
