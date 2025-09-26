@@ -49,7 +49,8 @@ for policy_arn in policies:
     except Exception as e:
         print(f"Failed to attach policy {policy_arn}: {e}")
 
-# Optional: Wait a few seconds for IAM role propagation
+
 print("Waiting 10 seconds for IAM role propagation...")
 time.sleep(10)
 print("IAM role setup complete and ready for Lambda.")
+
