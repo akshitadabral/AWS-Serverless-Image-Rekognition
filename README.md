@@ -86,7 +86,7 @@ Manually create and paste detectlabels.py code.
 3. API Gateway: /detect-labels
 Create resource → Add POST method → Integrate with DetectLabelsLambda → Enable CORS.
 
-**Frontend Setup*
+**Frontend Setup**
 
 1. Create or edit the frontend (static website).
 2. Configure API endpoint URLs (/generate-upload-url and /detect-labels) in the frontend code.
@@ -100,5 +100,7 @@ Create resource → Add POST method → Integrate with DetectLabelsLambda → En
 **Notes**
 
 1.Pre-signed URLs ensure secure uploads without exposing S3 bucket credentials.
+
 2.Serverless architecture allows automatic scaling with upload traffic.
+
 3.CloudWatch logs provide monitoring and debugging.
