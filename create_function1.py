@@ -8,14 +8,14 @@ from botocore.exceptions import ClientError
 # ------------------------
 # CONFIGURATION
 # ------------------------
-role_name = "urlrole"  # Use the existing IAM role you created
+role_name = "urlrole"  
 function_name = "GenerateUploadURL"
 bucket_name = "image-upload-bucket-akshita"
 region = "ap-south-1"
 lambda_file_name = "generate_upload_url.zip"  # Temporary zip for Lambda code
 
 # ------------------------
-# LAMBDA FUNCTION CODE (same logic as console)
+# LAMBDA FUNCTION CODE
 # ------------------------
 lambda_code = """
 import json
@@ -124,3 +124,4 @@ except lambda_client.exceptions.ResourceNotFoundException:
 os.remove("lambda_function.py")
 os.remove(lambda_file_name)
 print("Temporary files cleaned up. SDK Lambda deployment complete.")
+
