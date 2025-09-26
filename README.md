@@ -112,7 +112,9 @@ Create resource → Add POST method → Integrate with DetectLabelsLambda → En
 
 AWS-Serverless-Image-Rekognition/
 ├── create_urlrole.py
+
 ├── create_bucket_with_cors.py
+
 ├── create_dynamotable.py
 ├── create_sns.py
 ├── create_function1.py
